@@ -2,6 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QLineEdit>
+#include <stack>
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -14,8 +17,14 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
+private slots:
+    void StartButtonClicked();
+    void StopButtonClicked();
+    void RecodingButtonClicked();
 private:
     Ui::MainWindow *ui;
+    QLineEdit *SettingsLineEdit;
+    std::stack<std::vector<int>> arrayStack;
+    bool isRecording;
 };
 #endif // MAINWINDOW_H
