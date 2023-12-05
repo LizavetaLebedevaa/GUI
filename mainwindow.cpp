@@ -4,12 +4,18 @@
 #include <QVBoxLayout>
 #include <QDebug>
 #include <QThread>
+#include <QHostAddress>
+#include <QDateTime>
+#include <QStandardItem>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    model = new QStandardItemModel(this);
+    ui->listView->setModel(model);
 
     SettingsLineEdit = ui->SettingsLineEdit;
     SettingsLineEdit->setPlaceholderText("Параметр настройки (N)");
@@ -19,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->StopButton, &QPushButton::clicked, this, &MainWindow::StopButtonClicked);
     connect(ui->RecodingButton, &QPushButton::clicked, this, &MainWindow::RecodingButtonClicked);
     isRecording = true;
+    udpSocket = new QUdpSocket(this);
 
 }
 
@@ -30,12 +37,14 @@ MainWindow::~MainWindow()
 void MainWindow::StartButtonClicked()
 {
     isRecording = false;
+    updateListView("Start button clicked");
     qDebug() << "Запись в стек запущена.";
 }
 
 void MainWindow::RecodingButtonClicked()
 {
     if (isRecording){
+        updateListView("Recording button clicked - Recording not allowed");
         qDebug() << "Запись в стек невозможна. Разрешите запись нажав кнопку старт.";
         return;
     }
@@ -44,6 +53,7 @@ void MainWindow::RecodingButtonClicked()
         if (ok)
         {
 
+            updateListView("Recording button clicked - Array recorded");
             qDebug() << "В стек был записан массив из : " << parameterValue <<" элементов";
             std::vector<int> randomArray(parameterValue);
                 for (int i = 0; i < parameterValue; i++) {
@@ -54,6 +64,7 @@ void MainWindow::RecodingButtonClicked()
         }
         else
         {
+
             qDebug() << "Неверный ввод. Пожалуйста, введите допустимое целое число.";
         }
 }
@@ -61,6 +72,14 @@ void MainWindow::RecodingButtonClicked()
 void MainWindow::StopButtonClicked()
 {
     isRecording = true;
+    updateListView("Stop button clicked");
     qDebug() << "Запись в стек остановлена.";
 }
 
+void MainWindow::updateListView(const QString &message)
+{
+    QString currentDateTime = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+
+    QStandardItem *item = new QStandardItem(currentDateTime + " - " + message);
+    model->appendRow(item);
+}
